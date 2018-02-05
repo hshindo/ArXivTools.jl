@@ -1,6 +1,6 @@
 using EzXML
 
-function downloadxml(outpath::String; from="", until="")
+function downloadxml(dt::DateTime)
     baseuri = "http://export.arxiv.org/oai2?verb=ListRecords"
     uri = "$baseuri&metadataPrefix=arXiv"
     if !isempty(from)
@@ -38,4 +38,8 @@ function readxml(path::String)
     parsexml(join(lines,"\n"))
 end
 
+dt = now()
+y = Dates.year(dt)
+m = Dates.month(dt)
+d = Dates.day(dt)
 downloadxml("a.xml")
