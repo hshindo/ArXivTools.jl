@@ -1,12 +1,11 @@
 using EzXML
 
-function downloadxml(dt::DateTime)
+function downloadxml(date::Date)
+    y, m, d = Dates.year(date), Dates.month(date), Dates.day(date)
+    format(num::Int) = num < 10 ? "0$num" : "$num"
+    ymd = "$y-$(format(m))-$(format(d))"
     baseuri = "http://export.arxiv.org/oai2?verb=ListRecords"
-    uri = "$baseuri&metadataPrefix=arXiv"
-    if !isempty(from)
-        @assert !isempty(until)
-        uri = "$uri&from=$from&until=$until"
-    end
+    uri = "$baseuri&metadataPrefix=arXiv&from=$ymd&until=$ymd"
 
     doc = XMLDocument()
     root = setroot!(doc, ElementNode("OAI-PMH"))
@@ -21,11 +20,10 @@ function downloadxml(dt::DateTime)
         isempty(nodes) && break
         token = nodecontent(nodes[1])
         isempty(token) && break
-        println("token=$token")
         uri = "$baseuri&resumptionToken=$token"
         sleep(5)
     end
-    write(outpath, doc)
+    write("arXiv$ymd.xml", doc)
 end
 
 function readxml(path::String)
@@ -38,8 +36,11 @@ function readxml(path::String)
     parsexml(join(lines,"\n"))
 end
 
-dt = now()
-y = Dates.year(dt)
-m = Dates.month(dt)
-d = Dates.day(dt)
-downloadxml("a.xml")
+n = Date(now())
+date = Date("2007-05-23")
+while date < n
+    println(date)
+    downloadxml(date)
+    date += Dates.Day(1)
+    sleep(5)
+end
